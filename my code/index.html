@@ -1,0 +1,136 @@
+<html>
+    <head>
+        <style>
+            canvas{
+                margin: 0 10%;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="pong" width="1000" height="500"></canvas>
+    </body>
+</html>
+        <script>
+const canvas = document.getElementById("pong");
+const ctx = canvas.getContext('2d');
+const ball = {
+    x : canvas.width/2,
+    y : canvas.height/2,
+    rad : 10,
+    dx : 5,
+    dx: 5,
+    speed : 10,
+    color : "white"
+}
+const user = {
+    x : 0, 
+    y : (canvas.height - 100)/2, 
+    width : 10,
+    height : 100,
+    score : 0,
+    color : "white"
+}
+const com = {
+    x : canvas.width - 10, 
+    y : (canvas.height - 100)/2, 
+    width : 10,
+    height : 100,
+    score : 0,
+    color : "white"
+}
+const net = {
+    x : (canvas.width - 2)/2,
+    y : 0,
+    height : 10,
+    width : 2,
+    color : "white"
+}
+function drawrect(x, y, w, h, color){
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, w, h);
+}
+function drawarc(x, y, r, color){
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(x,y,r,0,Math.PI*2,true);
+    ctx.closePath();
+    ctx.fill();
+}
+ canvas.addEventListener("mousemove", getMousePos);
+function getMousePos(evt){
+    let rect = canvas.getBoundingClientRect();
+    user.y = evt.clientY - rect.top - user.height/2;
+}
+function resetBall(){
+    ball.x = canvas.width/2;
+    ball.y = canvas.height/2;
+    ball.dx = -ball.dx;
+    ball.speed = 10;
+}
+function drawNet(){
+    for(let i = 0; i <= canvas.height; i+=15){
+        drawrect(net.x, net.y + i, net.width, net.height, net.color);
+    }
+}
+function drawtext(text,x,y){
+    ctx.fillStyle = "#FFF";
+    ctx.font = "75px fantasy";
+    ctx.fillText(text, x, y);
+}
+function collision(b,p){
+    p.top = p.y;
+    p.bottom = p.y + p.height;
+    p.left = p.x;
+    p.right = p.x + p.width;
+    b.top = b.y - b.rad;
+    b.bottom = b.y + b.rad;
+    b.left = b.x - b.rad;
+    b.right = b.x + b.rad;
+    return p.left < b.right && p.top < b.bottom && p.right > b.left && p.bottom > b.top;
+}
+function update(){
+    if( ball.x - ball.rad < 0 ){
+        com.score++;
+      //  comScore.play();
+        resetBall();
+    }else if( ball.x + ball.rad > canvas.width){
+        user.score++;
+    //    userScore.play();
+        resetBall();
+    }
+    ball.x += ball.dx;
+    ball.y += ball.dy;
+    com.y += ((ball.y - (com.y + com.height/2)))*0.1;
+    if(ball.y - ball.rad < 0 || ball.y + ball.rad > canvas.height){
+        ball.dy = -ball.dy;
+    }
+    let player = (ball.x + ball.rad < canvas.width/2) ? user : com;
+    if(collision(ball,player)){
+let collidePoint = (ball.y - (player.y + player.height/2));
+    collidePoint = collidePoint / (player.height/2);
+    let angleRad = (Math.PI/4) * collidePoint;
+    let direction = (ball.x + ball.rad < canvas.width/2) ? 1 : -1;
+    ball.dx = direction * ball.speed * Math.cos(angleRad);
+    ball.dy = ball.speed * Math.sin(angleRad);
+    ball.speed += 0.1;
+    }
+}
+            
+            
+function render(){
+    drawrect(0, 0, canvas.width, canvas.height, "#000");
+    drawtext(user.score,canvas.width/4,canvas.height/5);
+    drawtext(com.score,3*canvas.width/4,canvas.height/5);
+    drawNet();
+    drawrect(user.x, user.y, user.width, user.height, user.color);
+    drawrect(com.x, com.y, com.width, com.height, com.color);
+    drawarc(ball.x, ball.y, ball.rad, ball.color);
+}
+function game(){
+    update();
+  render();
+}
+let framePerSecond = 50;
+let loop = setInterval(game,1000/framePerSecond);
+        </script>
+   
